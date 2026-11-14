@@ -1,2 +1,9 @@
-print("voce digitou o numero ",N1
-      )
+nome = input("Digite seu nome: ")  # Variável que recebe o nome do usuário
+
+print("Olá,", nome)
+
+
+
+
+
+
