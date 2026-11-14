@@ -1,0 +1,201 @@
+<!doctype html>
+<html lang="pt-BR">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Resolução dos Exercícios - Python para Data Science</title>
+  <style>
+    @page { size: A4; margin: 18mm 17mm 18mm; }
+    :root {
+      color-scheme: light;
+      --ink: #202b2b;
+      --muted: #52615f;
+      --accent: #bd242a;
+      --rule: #d7dfdc;
+      --wash: #f1f5f2;
+    }
+    * { box-sizing: border-box; }
+    body { margin: 0; color: var(--ink); font: 9.5pt/1.38 "Aptos", "Calibri", sans-serif; }
+    header {
+      border-top: 7px solid var(--accent);
+      padding-top: 17mm;
+      min-height: 255mm;
+      display: flex;
+      flex-direction: column;
+      justify-content: center;
+    }
+    .eyebrow { color: var(--accent); font-size: 10pt; font-weight: 700; text-transform: uppercase; }
+    h1 { max-width: 150mm; margin: 5mm 0 4mm; font-size: 30pt; line-height: 1.12; }
+    .subtitle { max-width: 135mm; color: var(--muted); font-size: 14pt; }
+    .identification { margin-top: 28mm; border-top: 1px solid var(--rule); padding-top: 5mm; color: var(--muted); }
+    section { break-before: page; page-break-before: always; }
+    h2 { margin: 0 0 3mm; padding-bottom: 2mm; border-bottom: 2px solid var(--accent); font-size: 20pt; line-height: 1.2; }
+    h3 { margin: 4mm 0 1.5mm; font-size: 11.5pt; }
+    p { margin: 1.5mm 0 2mm; }
+    .lead { color: var(--muted); }
+    pre {
+      margin: 2mm 0 3mm;
+      padding: 3mm;
+      border-left: 3px solid #33766a;
+      background: var(--wash);
+      color: #172323;
+      font: 7.6pt/1.28 Consolas, "Courier New", monospace;
+      white-space: pre-wrap;
+      overflow-wrap: anywhere;
+    }
+    .answer { margin: 2mm 0; padding: 2mm 3mm; border-left: 3px solid var(--accent); background: #faf4f2; }
+    table { width: 100%; margin: 2mm 0 3mm; border-collapse: collapse; font-size: 9pt; }
+    th, td { padding: 1.5mm 2mm; border-bottom: 1px solid var(--rule); text-align: left; }
+    th { background: var(--wash); }
+    .small { color: var(--muted); font-size: 9pt; }
+    footer { margin-top: 4mm; padding-top: 1.5mm; border-top: 1px solid var(--rule); color: var(--muted); font-size: 8pt; }
+    @media screen {
+      body { max-width: 210mm; margin: 12mm auto; padding: 0 17mm; }
+      header { min-height: 245mm; }
+      section { margin-top: 12mm; }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="eyebrow">Python para Data Science · Aula 01</div>
+    <h1>Resolução dos exercícios</h1>
+    <p class="subtitle">Análise de temperatura, vendas por setor e evolução de preços de ações com Pandas e Matplotlib.</p>
+    <p class="identification">Nome: Renan Rodrigues Dos Santos &nbsp;&nbsp; Data: 07/11/2026</p>
+  </header>
+
+  <main>
+    <section>
+      <h2>Exercício 1 · Temperatura</h2>
+      <p class="lead">Os registros são horários e temperaturas medidas em uma máquina. O gráfico de linhas permite acompanhar a variação ao longo do dia.</p>
+
+      <h3>Código</h3>
+      <pre><code>import pandas as pd
+import matplotlib.pyplot as plt
+
+dados = {
+    "tempo": ["08:00", "09:00", "10:00", "11:00", "12:00",
+              "13:00", "14:00", "15:00", "16:00", "17:00"],
+    "temperatura": [25, 28, 32, 35, 38, 42, 45, 41, 37, 33]
+}
+
+df = pd.DataFrame(dados)
+df["variacao"] = df["temperatura"].diff()
+
+ax = df.plot(x="tempo", y="temperatura", kind="line", marker="o",
+             legend=False, title="Temperatura da máquina ao longo do tempo")
+ax.set_xlabel("Horário")
+ax.set_ylabel("Temperatura (°C)")
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print("Maior temperatura:", df["temperatura"].max(), "°C")
+print("Menor temperatura:", df["temperatura"].min(), "°C")
+print("Temperatura média:", df["temperatura"].mean(), "°C")
+print("Maior elevação por intervalo:", df["variacao"].max(), "°C")
+print(df.loc[df["variacao"] == df["variacao"].max(), ["tempo", "variacao"]])</code></pre>
+
+      <h3>Respostas</h3>
+      <div class="answer"><strong>a) Maior temperatura:</strong> 45 °C, às 14:00.</div>
+      <div class="answer"><strong>b) Menor temperatura:</strong> 25 °C, às 08:00.</div>
+      <div class="answer"><strong>c) Maior elevação:</strong> 4 °C. Ocorreu em dois intervalos: das 09:00 às 10:00 (28 °C para 32 °C) e das 12:00 às 13:00 (38 °C para 42 °C).</div>
+      <div class="answer"><strong>d) Temperatura média:</strong> <code>df["temperatura"].mean()</code> resulta em 35,6 °C.</div>
+      <p class="small">O método <code>diff()</code> calcula a diferença entre cada leitura e a leitura anterior; por isso, o primeiro registro não tem variação definida.</p>
+      <footer>Resolução baseada nos dados apresentados no material da aula.</footer>
+    </section>
+
+    <section>
+      <h2>Exercício 2 · Vendas por setor</h2>
+      <p class="lead">O faturamento por setor é obtido somando as vendas de todos os clientes daquele setor. Também é possível calcular a média e localizar a maior venda individual.</p>
+
+      <h3>Código</h3>
+      <pre><code>import pandas as pd
+import matplotlib.pyplot as plt
+
+dados = {
+    "cliente": ["C1", "C2", "C3", "C4", "C5", "C6", "C7", "C8", "C9", "C10"],
+    "setor": ["Tecnologia", "Indústria", "Comércio", "Tecnologia", "Indústria",
+              "Comércio", "Tecnologia", "Indústria", "Comércio", "Tecnologia"],
+    "vendas": [1500, 2500, 1200, 3000, 4500, 2000, 3500, 5000, 2800, 4000]
+}
+
+df = pd.DataFrame(dados)
+faturamento_setor = df.groupby("setor")["vendas"].sum()
+media_setor = df.groupby("setor")["vendas"].mean()
+maior_venda = df.loc[df["vendas"].idxmax()]
+
+ax = faturamento_setor.plot(kind="bar", color="#33766a",
+                            title="Faturamento total por setor")
+ax.set_xlabel("Setor")
+ax.set_ylabel("Faturamento (R$)")
+plt.xticks(rotation=0)
+plt.tight_layout()
+plt.show()
+
+print("Faturamento por setor:\n", faturamento_setor)
+print("Média de vendas por setor:\n", media_setor)
+print("Faturamento total:", df["vendas"].sum())
+print("Maior venda:\n", maior_venda)</code></pre>
+
+      <h3>Resultados</h3>
+      <table>
+        <thead><tr><th>Setor</th><th>Faturamento total</th><th>Média por venda</th></tr></thead>
+        <tbody>
+          <tr><td>Tecnologia</td><td>R$ 12.000</td><td>R$ 3.000</td></tr>
+          <tr><td>Indústria</td><td>R$ 12.000</td><td>R$ 4.000</td></tr>
+          <tr><td>Comércio</td><td>R$ 6.000</td><td>R$ 2.000</td></tr>
+        </tbody>
+      </table>
+
+      <div class="answer"><strong>a) Maior faturamento:</strong> Tecnologia e Indústria empataram, com R$ 12.000 cada.</div>
+      <div class="answer"><strong>b) Menor faturamento:</strong> Comércio, com R$ 6.000.</div>
+      <div class="answer"><strong>c) Maior compra:</strong> cliente C8, do setor Indústria, com R$ 5.000.</div>
+      <div class="answer"><strong>d) Faturamento total:</strong> <code>df["vendas"].sum()</code> resulta em R$ 30.000.</div>
+      <div class="answer"><strong>e) Média por setor:</strong> <code>df.groupby("setor")["vendas"].mean()</code>. Os resultados são Tecnologia: R$ 3.000; Indústria: R$ 4.000; Comércio: R$ 2.000.</div>
+      <footer>Resolução baseada nos dados apresentados no material da aula.</footer>
+    </section>
+
+    <section>
+      <h2>Exercício 3 · Preços das ações</h2>
+      <p class="lead">Os preços de fechamento são organizados por dia e exibidos em um gráfico de linhas. Comparando cada preço com o do dia anterior, identificamos as quedas.</p>
+
+      <h3>Código</h3>
+      <pre><code>import pandas as pd
+import matplotlib.pyplot as plt
+
+dados = {
+    "dia": ["D1", "D2", "D3", "D4", "D5", "D6", "D7", "D8", "D9", "D10"],
+    "preco": [25.50, 26.20, 25.80, 27.00, 28.50,
+              27.80, 29.20, 30.50, 29.80, 31.00]
+}
+
+df = pd.DataFrame(dados)
+df["variacao"] = df["preco"].diff()
+
+ax = df.plot(x="dia", y="preco", kind="line", marker="o", legend=False,
+             title="Preço de fechamento ao longo de 10 dias")
+ax.set_xlabel("Dia")
+ax.set_ylabel("Preço (R$)")
+plt.grid(True, alpha=0.3)
+plt.tight_layout()
+plt.show()
+
+print("Maior preço:", df["preco"].max())
+print("Menor preço:", df["preco"].min())
+print("Média dos preços:", df["preco"].mean())
+print("Dias com queda:\n", df.loc[df["variacao"] &lt; 0, ["dia", "preco", "variacao"]])
+lucro = (df["preco"].iloc[-1] - df["preco"].iloc[0]) * 100
+print("Lucro com 100 ações: R$", lucro)</code></pre>
+
+      <h3>Respostas</h3>
+      <div class="answer"><strong>a) Maior preço:</strong> R$ 31,00, no dia D10.</div>
+      <div class="answer"><strong>b) Menor preço:</strong> R$ 25,50, no dia D1.</div>
+      <div class="answer"><strong>c) Dias com queda:</strong> D3 (de R$ 26,20 para R$ 25,80), D6 (de R$ 28,50 para R$ 27,80) e D9 (de R$ 30,50 para R$ 29,80).</div>
+      <div class="answer"><strong>d) Média dos preços:</strong> R$ 28,13.</div>
+      <div class="answer"><strong>e) Lucro bruto:</strong> (R$ 31,00 − R$ 25,50) × 100 = R$ 550,00, desconsiderando taxas e impostos.</div>
+      <footer>Resolução baseada nos dados apresentados no material da aula.</footer>
+    </section>
+  </main>
+</body>
+</html>
