@@ -1,5 +1,3 @@
-# exemplo 1 - Tipos de Variaveis
-num = float(input("Digite um número: "))
-print(f"Número informado: {num}")
-print(f"Tipo da variável: {type(num)}")
-print(type(num))
+nome = input("Digite seu nome: ")  # Variável que recebe o nome do usuário
+
+print("Olá,", nome)
